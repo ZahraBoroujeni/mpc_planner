@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package format="2">
+	<name>mpc_planner</name>
+	<version>0.0.1</version>
+	<description>Planning trajectories in a local environment with a given road struction.</description>
+
+	<maintainer email="zahra.boroujeni@fu-berlin.de">Autonomos-Labs, FU Berlin</maintainer>
+
+	<license>proprietary</license>
+
+	<url type="website">https://www.autonomos-labs.de/</url>
+
+	<author email="zahra.boroujeni@fu-berlin.de">Autonomos-Labs, FU Berlin</author>
+
+	<buildtool_depend>catkin</buildtool_depend>
+
+	<depend>autonomos_cmake</depend>
+
+	<build_depend>roscpp</build_depend>
+	<depend>dynamic_reconfigure</depend>
+	<depend>autonomos_atlas_lib</depend>
+		<depend>fub_local_structured_trajectory_planner</depend>
+		<depend>ecl_geometry</depend>
+ <build_depend>liblapack-dev</build_depend>
+ <build_depend>libblas-dev</build_depend>
+	
+	<!-- Only for visualization test now -->
+	<depend>fub_atlas_publisher</depend>
+	<depend>nodelet</depend>
+
+</package>

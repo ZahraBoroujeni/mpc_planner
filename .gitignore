@@ -1,0 +1,6 @@
+# Eclipse
+.project
+.cproject
+
+# CLion
+.idea/

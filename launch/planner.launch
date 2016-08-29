@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="bagfile" default="$(find fub_atlas_publisher)/resources/dummy1.map.bag" />
+	<node pkg="fub_local_structured_trajectory_planner"
+		name="fub_local_structured_trajectory_planner_visualize_routing_graph"
+		type="fub_local_structured_trajectory_planner_visualize_routing_graph"
+		args="$(arg bagfile)" output="screen">
+	</node>
+	<node pkg="fub_local_planner"
+		name="fub_local_planner"
+		type="fub_local_planner_node"
+		args="$(arg bagfile)" output="screen">
+	</node>
+	<node pkg="fub_senario" name="fub_senario" type="fub_senario" output="screen"></node>
+	<node pkg="rqt_reconfigure" name="rqt_reconfigure" type="rqt_reconfigure" output="screen"></node>
+
+	
+
+	<node name="rviz" pkg="rviz" type="rviz"
+		args="-d $(find fub_local_planner)/cfg/optimalplan.rviz"
+		required="true" />
+
+</launch>
