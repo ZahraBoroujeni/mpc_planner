@@ -3,9 +3,9 @@ project(mpc_planner)
 # SET (FLIBS  -L/usr/lib/gcc/x86_64-linux-gnu/4.8 -L/usr/lib/gcc/x86_64-linux-gnu/4.8/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/4.8/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/4.8/../../.. -llapack -lblas -lgfortran -lm -lgcc_s -lquadmath)
 # SET (FLIBS -llapack -lblas)
 
- SET(GCC_COVERAGE_COMPILE_FLAGS "-DHAVE_NAMESPACES -Wno-write-strings")
+SET(GCC_COVERAGE_COMPILE_FLAGS "-DHAVE_NAMESPACES -Wno-write-strings")
 SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-w -std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ######################################
 ## Find catkin macros and libraries ##
@@ -14,22 +14,25 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	dynamic_reconfigure
-	autonomos_atlas_lib
 	autonomos_cmake
-	fub_atlas_publisher
   	ecl_geometry
   	std_msgs
-  	tf std_msgs sensor_msgs geometry_msgs nav_msgs
-  	fub_local_structured_trajectory_planner
+  	tf std_msgs sensor_msgs geometry_msgs nav_msgs 
   	nodelet
+    rospy
 )
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake_modules)
+find_package(CASADI REQUIRED)
+include_directories(${CASADI_INCLUDE_DIR})
 
 # find_package(Eigen3 REQUIRED)
 # find_package(LAPACK REQUIRED)
 # find_package(BLAS REQUIRED)
 # link_directories(/usr/lib/atlas-base/atlas/ )
-link_directories(/usr/lib/openblas-base/ )
-
+#link_directories(/usr/lib/openblas-base/ )
+#link_directories(/home/mi/boroujeni/Ipopt-3.2.1)
+# Add IPOPT link directories
+#link_directories(${IPOPT_LIBRARY_DIRS})
 
 
 
@@ -67,10 +70,6 @@ catkin_package(
 #	LIBRARIES ...
     LIBRARIES ${PROJECT_NAME} ecl_geometry
 	CATKIN_DEPENDS
-		autonomos_atlas_lib
-		autonomos_cmake
-		fub_atlas_publisher
-		fub_local_structured_trajectory_planner
 		ecl_geometry
 		dynamic_reconfigure
 		nodelet
@@ -175,12 +174,21 @@ include_directories(SYSTEM
 ## Build fmpc_sim ##
 ####################################
 
-add_executable(fmpc_sim src/fmpc_sim.cpp)
-target_link_libraries(fmpc_sim
-                ${catkin_LIBRARIES}
-                lapack
-                openblas
-)
+# add_executable(fmpc_sim src/fmpc_sim.cpp)
+# target_link_libraries(fmpc_sim
+#                 ${catkin_LIBRARIES}
+#                 lapack
+#                 openblas
+# )
+
+
+####################################
+## Build mpc_multiple_shooting ##
+####################################
+
+# Writing a multiple shooting code from scratch
+  add_executable(mpc_planner src/nmpc_planner.cpp)
+  target_link_libraries(mpc_planner ${catkin_LIBRARIES} ${CASADI_LIBRARIES})
 
 #############
 ## Install ##
@@ -197,26 +205,34 @@ target_link_libraries(fmpc_sim
 # )
 
 ## Mark executables and/or libraries for installation
-install(
-	TARGETS
-		fmpc_sim
-	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+ # install(PROGRAMS
+ #   scripts/mpc.py
+ #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+ # )
 
-## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-	FILES_MATCHING PATTERN "*.h"
-	PATTERN ".svn" EXCLUDE
-)
+#  catkin_install_python(PROGRAMS scripts/mpc.py
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-## Mark other files for installation (e.g. launch and g files, etc.)
-install(
-	DIRECTORY launch
-	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+# install(
+# 	TARGETS
+# 		fmpc_sim
+# 	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+# 	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+# 	RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
+
+# ## Mark cpp header files for installation
+# install(DIRECTORY include/${PROJECT_NAME}/
+# 	DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# 	FILES_MATCHING PATTERN "*.h"
+# 	PATTERN ".svn" EXCLUDE
+# )
+
+# ## Mark other files for installation (e.g. launch and g files, etc.)
+# install(
+# 	DIRECTORY launch
+# 	DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# )
 
 #############
 ## Testing ##

@@ -19,10 +19,10 @@
 	<build_depend>roscpp</build_depend>
 	<depend>dynamic_reconfigure</depend>
 	<depend>autonomos_atlas_lib</depend>
-		<depend>fub_local_structured_trajectory_planner</depend>
-		<depend>ecl_geometry</depend>
- <build_depend>liblapack-dev</build_depend>
- <build_depend>libblas-dev</build_depend>
+    <depend>rospy</depend>
+	<depend>ecl_geometry</depend>
+ 	<build_depend>liblapack-dev</build_depend>
+ 	<build_depend>libblas-dev</build_depend>
 	
 	<!-- Only for visualization test now -->
 	<depend>fub_atlas_publisher</depend>
