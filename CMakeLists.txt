@@ -15,11 +15,11 @@ find_package(catkin REQUIRED COMPONENTS
 	roscpp
 	dynamic_reconfigure
 	autonomos_cmake
-  	ecl_geometry
-  	std_msgs
-  	tf std_msgs sensor_msgs geometry_msgs nav_msgs 
-  	nodelet
-    rospy
+  ecl_geometry
+  std_msgs
+  tf std_msgs sensor_msgs geometry_msgs nav_msgs 
+  nodelet
+  rospy
 )
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake_modules)
 find_package(CASADI REQUIRED)
@@ -68,13 +68,13 @@ include(Autonomos)
 catkin_package(
 	INCLUDE_DIRS include
 #	LIBRARIES ...
-    LIBRARIES ${PROJECT_NAME} ecl_geometry
+  LIBRARIES ${PROJECT_NAME} ecl_geometry
 	CATKIN_DEPENDS
 		ecl_geometry
 		dynamic_reconfigure
 		nodelet
-    DEPENDS 
-    	Eigen 
+  DEPENDS 
+    Eigen 
 )
 ###########
 ## Build ##
