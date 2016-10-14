@@ -53,6 +53,7 @@ class MyCallback : public Callback {
    mpc_obj mpc_obj1;
    // Private constructor
    MyCallback(mpc_obj mpc_obj) : mpc_obj1(mpc_obj) {}
+   ~MyCallback(){} 
  public:
    // Creator function, creates an owning reference
    static Function create(const std::string& name, mpc_obj mpc_obj,
@@ -64,15 +65,25 @@ class MyCallback : public Callback {
    virtual void init() {
      std::cout << "initializing object" << std::endl;
    }
+   
+   virtual bool has_jacobian() {return true;}
+   virtual Function get_jacobian(const std::string& name, const Dict& opts){
+        SX x  = SX::sym("x");
+        SX y  = SX::sym("y");
+        return Function("f",{x,y},{DM::zeros(1,2)});
+    }
 
+  // virtual Function get_jacobian(const std::string& name, const Dict& opts=Dict());
+
+    
    // Number of inputs and outputs
    virtual int get_n_in() { return 2;}
    virtual int get_n_out() { return 2;}
 
    // Evaluate numerically
     virtual std::vector<DM> eval(std::vector<DM>& arg) {
-        DM x = arg.at(0);
-        DM y = arg.at(1);
+        double x = arg.at(0).scalar();
+        double y = arg.at(1).scalar();
         Position pos_car;
         pos_car[0] = (double) x * boost::units::si::meter;
         pos_car[1] = (double) y * boost::units::si::meter;
@@ -117,9 +128,9 @@ nav_msgs::Path creat_path(vector<double> x, vector<double> y)
 }
 // void Error(double x, double y,mpc_obj mpc_obj)
 // {
-// 	Position pos_car;
-// 	pos_car[0] = 0 * boost::units::si::meter;
-// 	pos_car[1] = 0 * boost::units::si::meter;
+//  Position pos_car;
+//  pos_car[0] = 0 * boost::units::si::meter;
+//  pos_car[1] = 0 * boost::units::si::meter;
 //     Length par=mpc_obj.drive->findClosestParameter(pos_car);
 //     pos_car=mpc_obj.leftBoundary->interpolate(par);
 // }
@@ -157,7 +168,7 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
     vector<double> xd,yd;
     Position pos_desired;
     // double d = 0.2;
-    // 		pos_desired=mpc_obj.drive->interpolate(mpc_obj.drive->length() * d );
+    //      pos_desired=mpc_obj.drive->interpolate(mpc_obj.drive->length() * d );
 
     for(int k=0; k<ns; k++)
     {
@@ -200,7 +211,7 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
     vector<double> v_min,v_max,v_init;
 
     // Offset in V
-    int offset=0;
+    int offset=0; 
 
     // State at each shooting node and control for each shooting interval
     vector<MX> X, U;
@@ -228,7 +239,7 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
     X.push_back(V[Slice(offset,offset+nx)]);
     v_min.insert(v_min.end(), mpc_obj.xf_min.begin(), mpc_obj.xf_min.end());
     v_max.insert(v_max.end(), mpc_obj.xf_max.begin(), mpc_obj.xf_max.end());
-    v_init.insert(v_init.end(), mpc_obj.x_init.begin(), mpc_obj.x_init.end());
+    v_init.insert(v_init.end(), mpc_obj.x_init.begin(), mpc_obj.x_init.end());    
     offset += nx;
 
     // Make sure that the size of the variable vector is consistent with the number of variables that we have referenced
@@ -245,6 +256,8 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
 
     vector<MX> X_D;
     X_D.push_back( V[Slice(0,0+2)] );
+    Function f = MyCallback::create("f", mpc_obj);
+
     // Loop over shooting nodes
     for(int k=0; k<ns; ++k){
         // Create an evaluation node
@@ -262,15 +275,15 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
         //street boundries and obstacles constraints
         // for(int k=0; k<Num_obstacles; ++k)
         // {
-
-        // 	theta=atan2(-2*Xk_end[4*k]/(2*(2.25-pow(Xk_end[4*k],2))),1);
-        // 	//obstacle road spline!
-        // 	g.push_back(pow(Xk_end[4*k],2)+pow(Xk_end[1+4*k],2)-2.25);
-        // 	g.push_back(pow(cos(theta)*(Xk_end[0]-Xk_end[4*k])+sin(theta)*(Xk_end[1]-Xk_end[1+4*k]),2)/pow(0.3,2)+pow(sin(theta)*(Xk_end[0]-Xk_end[4*k])-cos(theta)*(Xk_end[1]-Xk_end[1+4*k]),2)/0.25);
-        // 	gl={0.0,0.0,0.0,0.0,-0.1,1.0};
-        // 	gh={0.0,0.0,0.0,0.0,0.1,inf};
-        // 	g_min.insert(g_min.end(), gl.begin(), gl.end());
-        // 	g_max.insert(g_max.end(), gh.begin(), gh.end());
+            
+        //  theta=atan2(-2*Xk_end[4*k]/(2*(2.25-pow(Xk_end[4*k],2))),1);
+        //  //obstacle road spline!
+        //  g.push_back(pow(Xk_end[4*k],2)+pow(Xk_end[1+4*k],2)-2.25);
+        //  g.push_back(pow(cos(theta)*(Xk_end[0]-Xk_end[4*k])+sin(theta)*(Xk_end[1]-Xk_end[1+4*k]),2)/pow(0.3,2)+pow(sin(theta)*(Xk_end[0]-Xk_end[4*k])-cos(theta)*(Xk_end[1]-Xk_end[1+4*k]),2)/0.25);
+        //  gl={0.0,0.0,0.0,0.0,-0.1,1.0};
+        //  gh={0.0,0.0,0.0,0.0,0.1,inf};
+        //  g_min.insert(g_min.end(), gl.begin(), gl.end());
+        //  g_max.insert(g_max.end(), gh.begin(), gh.end());
         // }
         // //spline_left_boundry
         // g.push_back(pow(Xk_end[0],2)+pow(Xk_end[1],2)-2);
@@ -286,7 +299,6 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
         //Error(X[k][0],X[k][1]);
         //Function= external('Error',*X[k][0],*X[k][1],mpc_obj);
 
-        Function f = MyCallback::create("f", mpc_obj);
         vector<MX> arg={X[k][0],X[k][1]};
         std::vector<MX> res = f(arg);
         std::cout << res.at(1) << std::endl;
@@ -295,7 +307,7 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
         J += I_out.at("qf")+driveSpline;
     }
 
-    // NLP
+    // NLP 
     MXDict nlp = {{"x", V}, {"f", J}, {"g", vertcat(g)}};
 
     // Set options
@@ -333,7 +345,7 @@ nav_msgs::Path mpc(int Num_obstacles,mpc_obj mpc_obj)
     x_opt[i] = V_opt.at(i*(nx+nu));
     y_opt[i] = V_opt.at(1+i*(nx+nu));
     }
-
+    
     cout << "x_opt = " << endl << x_opt << endl;
     cout << "y_opt = " << endl << y_opt << endl;
     return creat_path(x_opt,y_opt);
@@ -366,10 +378,10 @@ int main(int argc, char **argv) {
     RoadSections::ConstIterator it = roadSectionsPtr->begin();
     ConstRoadSectionPtr roadSectionPtr = *it;
 
-    //select first lane of the section
+    //select first lane of the section  
     ConstLanesPtr lanesPtr = roadSectionPtr->lanes();
-
-    //drive spline
+    
+    //drive spline 
     Lanes::ConstIterator itl = lanesPtr->begin();
     ConstLanePtr lanePtr = *itl;
     ConstSplinePtr splineDrivePtr = lanePtr->drive();
@@ -385,8 +397,8 @@ int main(int argc, char **argv) {
     ConstBoundaryPtr rightBoundaryPtr=lanePtr->rightBoundary();
     mpc_obj.rightBoundary=rightBoundaryPtr->spline();
 
-
-
+    
+    
     Position pos1=splineDrivePtr->supportPoint(splineDrivePtr->numSupportPoints() - 1);;
     ROS_INFO("before: %f",pos1[0].value());
     Length param1=mpc_obj.leftBoundary->findClosestParameter(pos1);
@@ -415,7 +427,7 @@ int main(int argc, char **argv) {
     //TODO: Read current position and velocity of the car form gps
     //for now I just read the first vertex of the road section as the initial point
     Position pos = splineDrivePtr->supportPoint(2);
-
+    
     mpc_obj.x0_min = {pos[0].value(), pos[1].value(), 0.0, 0.0};
     mpc_obj.x0_max = {pos[0].value(), pos[1].value(), 0.0, 0.0};
     mpc_obj.x_init = {pos[0].value(), pos[1].value(), 0.0, 0.0};
@@ -457,7 +469,7 @@ int main(int argc, char **argv) {
     path_car=mpc(Num_obstacles,mpc_obj);
     ros::Rate rate(0.5);
 
-    //Visualize refrence
+    //Visualize refrence 
     vector<double> xd,yd;
     Position pos_desired;
             //Visualize left boundry
@@ -471,7 +483,7 @@ int main(int argc, char **argv) {
     path_lb=creat_path(xd,yd);
     xd.clear();
     yd.clear();
-        //Visualize refrence
+        //Visualize refrence 
     for(int k=0; k<50; k++)
     {
         double d= double(k)/50;
